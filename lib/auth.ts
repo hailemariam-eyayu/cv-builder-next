@@ -34,21 +34,31 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log("❌ Missing email or password");
           throw new Error("Invalid credentials");
         }
 
         await connectDB();
         const user = await User.findOne({ email: credentials.email });
 
-        if (!user || !user.password) {
+        if (!user) {
+          console.log("❌ User not found:", credentials.email);
+          throw new Error("Invalid credentials");
+        }
+
+        if (!user.password) {
+          console.log("❌ User has no password (OAuth user):", credentials.email);
           throw new Error("Invalid credentials");
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.password);
 
         if (!isValid) {
+          console.log("❌ Invalid password for:", credentials.email);
           throw new Error("Invalid credentials");
         }
+
+        console.log("✅ Login successful for:", credentials.email);
 
         return {
           id: user._id.toString(),

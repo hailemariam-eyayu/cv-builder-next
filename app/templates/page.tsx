@@ -45,13 +45,25 @@ export default function TemplatesPage() {
 
   const useTemplate = async (templateId: string) => {
     try {
+      // First, get the template details
+      const template = templates.find(t => t._id === templateId);
+      if (!template) {
+        console.error("Template not found");
+        return;
+      }
+
+      // Fetch full template with structure
+      const templateRes = await fetch(`/api/templates/${templateId}`);
+      const templateData = await templateRes.json();
+      
+      // Create CV with template structure
       const res = await fetch("/api/cv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: "My CV",
+          title: `${template.name} - My CV`,
           templateId,
-          content: { components: [] },
+          content: templateData.template?.structure || { components: [] },
         }),
       });
 

@@ -22,6 +22,10 @@ export interface CVComponent {
   content: any;
   position: { x: number; y: number };
   size: { width: number; height: number };
+  layout?: {
+    width: "25%" | "50%" | "75%" | "100%";
+    align: "left" | "center" | "right";
+  };
 }
 
 interface DragDropEditorProps {
