@@ -85,12 +85,20 @@ export default function Dashboard() {
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">My CVs</h1>
-          <Link href="/builder/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Create New CV
-            </Button>
-          </Link>
+          <div className="flex gap-3">
+            <Link href="/templates">
+              <Button variant="outline">
+                <FileText className="w-4 h-4 mr-2" />
+                Browse Templates
+              </Button>
+            </Link>
+            <Link href="/builder/new">
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Create New CV
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {cvs.length === 0 ? (
