@@ -31,6 +31,11 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Credentials files (local only)
+VERCEL_ENV_VARIABLES.txt
+*_CREDENTIALS.txt
+*.credentials
+
 # Vercel
 .vercel
 
