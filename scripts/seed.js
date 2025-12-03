@@ -1,12 +1,9 @@
-import * as dotenv from 'dotenv';
-import { resolve } from 'path';
+require('dotenv').config({ path: '.env.local' });
+const mongoose = require('mongoose');
 
-// Load environment variables
-dotenv.config({ path: resolve(__dirname, '../.env.local') });
+const MONGODB_URI = process.env.MONGODB_URI;
 
-import connectDB from '../lib/db';
-import Template from '../lib/models/Template';
-import User from '../lib/models/User';
+console.log('🌱 Starting database seeding...\n');
 
 const templates = [
   {
@@ -31,18 +28,6 @@ const templates = [
           content: { email: 'your.email@example.com', phone: '+1 234 567 8900', location: 'City, Country' },
           position: { x: 0, y: 70 },
           size: { width: 100, height: 80 },
-        },
-        {
-          id: 'experience-1',
-          type: 'experience',
-          content: {
-            title: 'Job Title',
-            company: 'Company Name',
-            duration: '2020 - Present',
-            description: 'Brief description of your role and achievements',
-          },
-          position: { x: 0, y: 160 },
-          size: { width: 100, height: 120 },
         },
       ],
     },
@@ -70,13 +55,6 @@ const templates = [
           position: { x: 160, y: 20 },
           size: { width: 100, height: 50 },
         },
-        {
-          id: 'skills-1',
-          type: 'skills',
-          content: { skills: ['Design', 'Illustration', 'Branding', 'UI/UX'] },
-          position: { x: 0, y: 170 },
-          size: { width: 100, height: 100 },
-        },
       ],
     },
   },
@@ -96,51 +74,53 @@ const templates = [
           position: { x: 0, y: 0 },
           size: { width: 100, height: 50 },
         },
-        {
-          id: 'text-1',
-          type: 'text',
-          content: { text: 'Professional Title', fontSize: 16 },
-          position: { x: 0, y: 60 },
-          size: { width: 100, height: 30 },
-        },
-        {
-          id: 'education-1',
-          type: 'education',
-          content: {
-            degree: 'Degree Name',
-            institution: 'University Name',
-            year: '2020',
-          },
-          position: { x: 0, y: 100 },
-          size: { width: 100, height: 80 },
-        },
       ],
     },
   },
 ];
 
-async function seedTemplates() {
+async function seed() {
   try {
-    await connectDB();
-    console.log('Connected to database');
+    await mongoose.connect(MONGODB_URI);
+    console.log('✅ Connected to MongoDB\n');
+
+    const User = mongoose.model('User', new mongoose.Schema({
+      name: String,
+      email: String,
+      role: String,
+      provider: String,
+    }));
+
+    const Template = mongoose.model('Template', new mongoose.Schema({
+      name: String,
+      description: String,
+      thumbnail: String,
+      structure: mongoose.Schema.Types.Mixed,
+      category: String,
+      isPremium: Boolean,
+      isApproved: Boolean,
+      createdBy: mongoose.Schema.Types.ObjectId,
+    }, { timestamps: true }));
 
     // Find or create admin user
     let adminUser = await User.findOne({ role: 'admin' });
     
     if (!adminUser) {
-      console.log('No admin user found. Creating default admin...');
+      console.log('📝 Creating admin user...');
       adminUser = await User.create({
         name: 'Admin',
         email: 'admin@cvbuilder.com',
         role: 'admin',
         provider: 'credentials',
       });
-      console.log('Admin user created. Email: admin@cvbuilder.com');
+      console.log('✅ Admin user created\n');
+    } else {
+      console.log('✅ Admin user already exists\n');
     }
 
     // Clear existing templates
     await Template.deleteMany({});
-    console.log('Cleared existing templates');
+    console.log('🗑️  Cleared existing templates\n');
 
     // Insert new templates
     for (const template of templates) {
@@ -148,17 +128,17 @@ async function seedTemplates() {
         ...template,
         createdBy: adminUser._id,
       });
-      console.log(`Created template: ${template.name}`);
+      console.log(`✅ Created template: ${template.name}`);
     }
 
-    console.log('\nSeeding completed successfully!');
-    console.log(`Total templates created: ${templates.length}`);
+    console.log(`\n🎉 Seeding completed successfully!`);
+    console.log(`📊 Total templates created: ${templates.length}\n`);
     
     process.exit(0);
   } catch (error) {
-    console.error('Seeding failed:', error);
+    console.error('❌ Seeding failed:', error.message);
     process.exit(1);
   }
 }
 
-seedTemplates();
+seed();
