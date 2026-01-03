@@ -43,8 +43,12 @@ export async function POST(req: NextRequest) {
       templateId,
       content,
       isPublic: isPublic || false,
-      shareableLink: isPublic ? generateShareableLink() : undefined,
     });
+
+    if (isPublic) {
+      cv.shareableLink = generateShareableLink(cv._id);
+      await cv.save();
+    }
 
     return NextResponse.json({ cv }, { status: 201 });
   } catch (error) {

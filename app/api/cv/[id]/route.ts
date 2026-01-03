@@ -41,7 +41,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     cv.isPublic = isPublic !== undefined ? isPublic : cv.isPublic;
     
     if (isPublic && !cv.shareableLink) {
-      cv.shareableLink = generateShareableLink();
+      cv.shareableLink = generateShareableLink(cv._id);
     }
 
     await cv.save();

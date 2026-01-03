@@ -45,7 +45,7 @@ export default function Dashboard() {
   };
 
   const deleteCV = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this CV?")) return;
+    if (!window.confirm("Are you sure you want to delete this CV?")) return;
 
     try {
       await fetch(`/api/cv/${id}`, { method: "DELETE" });

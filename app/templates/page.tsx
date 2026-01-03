@@ -43,7 +43,7 @@ export default function TemplatesPage() {
     }
   };
 
-  const useTemplate = async (templateId: string) => {
+  const handleUseTemplate = async (templateId: string) => {
     try {
       // First, get the template details
       const template = templates.find(t => t._id === templateId);
@@ -116,7 +116,7 @@ export default function TemplatesPage() {
                 <p className="text-sm text-gray-600 mb-4">{template.description}</p>
                 <Button
                   className="w-full"
-                  onClick={() => useTemplate(template._id)}
+                  onClick={() => handleUseTemplate(template._id)}
                 >
                   Use This Template
                 </Button>
