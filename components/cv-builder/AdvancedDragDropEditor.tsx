@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -9,14 +9,41 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragOverEvent,
 } from "@dnd-kit/core";
 import { ResizableElement } from "./ResizableElement";
 import { ElementToolbar } from "./ElementToolbar";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { TemplateSelector } from "./TemplateSelector";
+import { FontSelector } from "./FontSelector";
+import { ColorThemes } from "./ColorThemes";
+import { AdvancedShapes } from "./AdvancedShapes";
+import { CVScoring } from "./CVScoring";
+import { AlignmentGuides } from "./AlignmentGuides";
+import { SelectionBox } from "./SelectionBox";
 import { Button } from "../ui/button";
-import { Save, Download, Eye, Grid, Layers } from "lucide-react";
+import { 
+  Save, 
+  Download, 
+  Eye, 
+  Grid, 
+  Undo2, 
+  Redo2, 
+  Type, 
+  Palette, 
+  Shapes, 
+  Award,
+  Copy,
+  Clipboard,
+  Trash2,
+  RotateCcw,
+  ZoomIn,
+  ZoomOut,
+  Maximize,
+  Minimize
+} from "lucide-react";
+import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
+import { useUndoRedo } from "../../hooks/useUndoRedo";
+import { useClipboard } from "../../hooks/useClipboard";
 
 export interface CVElement {
   id: string;
@@ -53,12 +80,25 @@ interface AdvancedDragDropEditorProps {
 
 export function AdvancedDragDropEditor({ initialElements = [], onSave }: AdvancedDragDropEditorProps) {
   const [elements, setElements] = useState<CVElement[]>(initialElements);
-  const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [selectedElements, setSelectedElements] = useState<string[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showGrid, setShowGrid] = useState(true);
   const [zoom, setZoom] = useState(100);
-  const [canvasSize, setCanvasSize] = useState({ width: 794, height: 1123 }); // A4 size in pixels
+  const [canvasSize] = useState({ width: 794, height: 1123 }); // A4 size in pixels
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  
+  // Modal states
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [showFontSelector, setShowFontSelector] = useState(false);
+  const [showColorThemes, setShowColorThemes] = useState(false);
+  const [showAdvancedShapes, setShowAdvancedShapes] = useState(false);
+  const [showCVScoring, setShowCVScoring] = useState(false);
+  
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Hooks for advanced functionality
+  const { addToHistory, undo, redo, canUndo, canRedo } = useUndoRedo(initialElements);
+  const { copyElements, pasteElements, hasClipboardContent } = useClipboard();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -67,6 +107,60 @@ export function AdvancedDragDropEditor({ initialElements = [], onSave }: Advance
       },
     })
   );
+
+  // Add to history when elements change
+  useEffect(() => {
+    if (elements.length > 0) {
+      addToHistory(elements);
+    }
+  }, [elements, addToHistory]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    selectedElements,
+    elements,
+    onCopy: () => {
+      const selectedElementsData = elements.filter(el => selectedElements.includes(el.id));
+      copyElements(selectedElementsData);
+    },
+    onPaste: () => {
+      if (hasClipboardContent) {
+        const pastedElements = pasteElements();
+        setElements([...elements, ...pastedElements]);
+      }
+    },
+    onDelete: () => {
+      setElements(elements.filter(el => !selectedElements.includes(el.id)));
+      setSelectedElements([]);
+    },
+    onUndo: () => {
+      const previousElements = undo();
+      if (previousElements) {
+        setElements(previousElements);
+        setSelectedElements([]);
+      }
+    },
+    onRedo: () => {
+      const nextElements = redo();
+      if (nextElements) {
+        setElements(nextElements);
+        setSelectedElements([]);
+      }
+    },
+    onSelectAll: () => {
+      setSelectedElements(elements.map(el => el.id));
+    },
+    onDuplicate: () => {
+      const selectedElementsData = elements.filter(el => selectedElements.includes(el.id));
+      const duplicatedElements = selectedElementsData.map(element => ({
+        ...element,
+        id: `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        position: { x: element.position.x + 20, y: element.position.y + 20 }
+      }));
+      setElements([...elements, ...duplicatedElements]);
+    },
+    onSave: () => onSave(elements),
+  });
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -93,10 +187,14 @@ export function AdvancedDragDropEditor({ initialElements = [], onSave }: Advance
         setElements([...elements, newElement]);
       }
     } else {
-      // Moving existing element
+      // Moving existing element(s)
       if (delta.x !== 0 || delta.y !== 0) {
+        const elementsToMove = selectedElements.includes(active.id as string) 
+          ? selectedElements 
+          : [active.id as string];
+        
         setElements(elements.map(el => 
-          el.id === active.id 
+          elementsToMove.includes(el.id)
             ? { 
                 ...el, 
                 position: { 
@@ -132,9 +230,7 @@ export function AdvancedDragDropEditor({ initialElements = [], onSave }: Advance
 
   const deleteElement = (id: string) => {
     setElements(elements.filter(el => el.id !== id));
-    if (selectedElement === id) {
-      setSelectedElement(null);
-    }
+    setSelectedElements(prev => prev.filter(selectedId => selectedId !== id));
   };
 
   const duplicateElement = (id: string) => {
@@ -160,39 +256,55 @@ export function AdvancedDragDropEditor({ initialElements = [], onSave }: Advance
   };
 
   const alignElements = (alignment: "left" | "center" | "right" | "top" | "middle" | "bottom") => {
-    if (!selectedElement) return;
+    if (selectedElements.length === 0) return;
     
-    const selectedEl = elements.find(el => el.id === selectedElement);
-    if (!selectedEl) return;
+    const elementsToAlign = elements.filter(el => selectedElements.includes(el.id));
+    
+    elementsToAlign.forEach(element => {
+      let updates: Partial<CVElement> = {};
+      
+      switch (alignment) {
+        case "left":
+          updates.position = { ...element.position, x: 0 };
+          break;
+        case "center":
+          updates.position = { ...element.position, x: (canvasSize.width - element.size.width) / 2 };
+          break;
+        case "right":
+          updates.position = { ...element.position, x: canvasSize.width - element.size.width };
+          break;
+        case "top":
+          updates.position = { ...element.position, y: 0 };
+          break;
+        case "middle":
+          updates.position = { ...element.position, y: (canvasSize.height - element.size.height) / 2 };
+          break;
+        case "bottom":
+          updates.position = { ...element.position, y: canvasSize.height - element.size.height };
+          break;
+      }
+      
+      updateElement(element.id, updates);
+    });
+  };
 
-    let updates: Partial<CVElement> = {};
-    
-    switch (alignment) {
-      case "left":
-        updates.position = { ...selectedEl.position, x: 0 };
-        break;
-      case "center":
-        updates.position = { ...selectedEl.position, x: (canvasSize.width - selectedEl.size.width) / 2 };
-        break;
-      case "right":
-        updates.position = { ...selectedEl.position, x: canvasSize.width - selectedEl.size.width };
-        break;
-      case "top":
-        updates.position = { ...selectedEl.position, y: 0 };
-        break;
-      case "middle":
-        updates.position = { ...selectedEl.position, y: (canvasSize.height - selectedEl.size.height) / 2 };
-        break;
-      case "bottom":
-        updates.position = { ...selectedEl.position, y: canvasSize.height - selectedEl.size.height };
-        break;
+  const handleZoomChange = (newZoom: number) => {
+    setZoom(Math.max(25, Math.min(200, newZoom)));
+  };
+
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  const clearCanvas = () => {
+    if (window.confirm('Are you sure you want to clear the canvas? This action cannot be undone.')) {
+      setElements([]);
+      setSelectedElements([]);
     }
-    
-    updateElement(selectedElement, updates);
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className={`flex h-screen bg-gray-100 ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
       {/* Left Toolbar */}
       <ElementToolbar />
       
@@ -200,26 +312,93 @@ export function AdvancedDragDropEditor({ initialElements = [], onSave }: Advance
       <div className="flex-1 flex flex-col">
         {/* Top Toolbar */}
         <div className="bg-white border-b p-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            {/* Undo/Redo */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                const previousElements = undo();
+                if (previousElements) setElements(previousElements);
+              }}
+              disabled={!canUndo}
+            >
+              <Undo2 className="w-4 h-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                const nextElements = redo();
+                if (nextElements) setElements(nextElements);
+              }}
+              disabled={!canRedo}
+            >
+              <Redo2 className="w-4 h-4" />
+            </Button>
+            
+            <div className="w-px h-6 bg-gray-300 mx-2" />
+            
+            {/* Copy/Paste */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                const selectedElementsData = elements.filter(el => selectedElements.includes(el.id));
+                copyElements(selectedElementsData);
+              }}
+              disabled={selectedElements.length === 0}
+            >
+              <Copy className="w-4 h-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                if (hasClipboardContent) {
+                  const pastedElements = pasteElements();
+                  setElements([...elements, ...pastedElements]);
+                }
+              }}
+              disabled={!hasClipboardContent}
+            >
+              <Clipboard className="w-4 h-4" />
+            </Button>
+            
+            <div className="w-px h-6 bg-gray-300 mx-2" />
+            
+            {/* View Controls */}
             <Button variant="outline" size="sm" onClick={() => setShowGrid(!showGrid)}>
               <Grid className="w-4 h-4 mr-2" />
               Grid
             </Button>
+            
             <div className="flex items-center gap-2">
-              <span className="text-sm">Zoom:</span>
+              <Button variant="outline" size="sm" onClick={() => handleZoomChange(zoom - 25)}>
+                <ZoomOut className="w-4 h-4" />
+              </Button>
               <select 
                 value={zoom} 
-                onChange={(e) => setZoom(Number(e.target.value))}
+                onChange={(e) => handleZoomChange(Number(e.target.value))}
                 className="border rounded px-2 py-1 text-sm"
               >
+                <option value={25}>25%</option>
                 <option value={50}>50%</option>
                 <option value={75}>75%</option>
                 <option value={100}>100%</option>
                 <option value={125}>125%</option>
                 <option value={150}>150%</option>
+                <option value={200}>200%</option>
               </select>
+              <Button variant="outline" size="sm" onClick={() => handleZoomChange(zoom + 25)}>
+                <ZoomIn className="w-4 h-4" />
+              </Button>
             </div>
-            <div className="flex items-center gap-2">
+            
+            <div className="w-px h-6 bg-gray-300 mx-2" />
+            
+            {/* Alignment Tools */}
+            <div className="flex items-center gap-1">
               <Button variant="outline" size="sm" onClick={() => alignElements("left")}>
                 Align Left
               </Button>
@@ -233,6 +412,30 @@ export function AdvancedDragDropEditor({ initialElements = [], onSave }: Advance
           </div>
           
           <div className="flex items-center gap-2">
+            {/* Advanced Tools */}
+            <Button variant="outline" size="sm" onClick={() => setShowFontSelector(true)}>
+              <Type className="w-4 h-4 mr-2" />
+              Fonts
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowColorThemes(true)}>
+              <Palette className="w-4 h-4 mr-2" />
+              Themes
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowAdvancedShapes(true)}>
+              <Shapes className="w-4 h-4 mr-2" />
+              Shapes
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowCVScoring(true)}>
+              <Award className="w-4 h-4 mr-2" />
+              Score CV
+            </Button>
+            
+            <div className="w-px h-6 bg-gray-300 mx-2" />
+            
+            {/* View Options */}
+            <Button variant="outline" size="sm" onClick={toggleFullscreen}>
+              {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+            </Button>
             <Button variant="outline" size="sm">
               <Eye className="w-4 h-4 mr-2" />
               Preview
@@ -266,6 +469,11 @@ export function AdvancedDragDropEditor({ initialElements = [], onSave }: Advance
                   transform: `scale(${zoom / 100})`,
                   transformOrigin: "top left",
                 }}
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
+                    setSelectedElements([]);
+                  }
+                }}
               >
                 {/* Grid overlay */}
                 {showGrid && (
@@ -281,13 +489,33 @@ export function AdvancedDragDropEditor({ initialElements = [], onSave }: Advance
                   />
                 )}
 
+                {/* Alignment Guides */}
+                <AlignmentGuides
+                  elements={elements}
+                  selectedElements={selectedElements}
+                  canvasSize={canvasSize}
+                />
+
+                {/* Selection Box */}
+                <SelectionBox
+                  onSelectionChange={setSelectedElements}
+                  elements={elements}
+                  canvasRef={canvasRef}
+                />
+
                 {/* Elements */}
                 {elements.map((element) => (
                   <ResizableElement
                     key={element.id}
                     element={element}
-                    isSelected={selectedElement === element.id}
-                    onSelect={() => setSelectedElement(element.id)}
+                    isSelected={selectedElements.includes(element.id)}
+                    onSelect={() => {
+                      if (selectedElements.includes(element.id)) {
+                        setSelectedElements(prev => prev.filter(id => id !== element.id));
+                      } else {
+                        setSelectedElements([element.id]);
+                      }
+                    }}
                     onUpdate={updateElement}
                     onDelete={deleteElement}
                     onDuplicate={duplicateElement}
@@ -315,10 +543,84 @@ export function AdvancedDragDropEditor({ initialElements = [], onSave }: Advance
 
       {/* Right Properties Panel */}
       <PropertiesPanel
-        selectedElement={selectedElement ? elements.find(el => el.id === selectedElement) || null : null}
+        selectedElement={selectedElements.length === 1 ? elements.find(el => el.id === selectedElements[0]) || null : null}
         onUpdate={updateElement}
         onDelete={deleteElement}
       />
+
+      {/* Modals */}
+      {showTemplateSelector && (
+        <TemplateSelector
+          isOpen={showTemplateSelector}
+          onClose={() => setShowTemplateSelector(false)}
+          onSelectTemplate={(templateElements) => setElements(templateElements)}
+        />
+      )}
+
+      {showFontSelector && (
+        <FontSelector
+          currentFont={elements.find(el => selectedElements.includes(el.id))?.style.fontFamily || 'Inter'}
+          onFontChange={(fontFamily) => {
+            selectedElements.forEach(id => {
+              updateElement(id, {
+                style: { ...elements.find(el => el.id === id)?.style, fontFamily }
+              });
+            });
+          }}
+          onClose={() => setShowFontSelector(false)}
+        />
+      )}
+
+      {showColorThemes && (
+        <ColorThemes
+          onThemeChange={(theme) => {
+            // Apply theme colors to selected elements or all elements
+            const elementsToUpdate = selectedElements.length > 0 ? selectedElements : elements.map(el => el.id);
+            elementsToUpdate.forEach(id => {
+              const element = elements.find(el => el.id === id);
+              if (element) {
+                let newStyle = { ...element.style };
+                
+                // Apply theme colors based on element type
+                if (element.type === 'heading') {
+                  newStyle.color = theme.colors.primary;
+                } else if (element.type === 'text') {
+                  newStyle.color = theme.colors.text;
+                } else if (element.type === 'shape') {
+                  newStyle.backgroundColor = theme.colors.accent;
+                }
+                
+                updateElement(id, { style: newStyle });
+              }
+            });
+          }}
+          onClose={() => setShowColorThemes(false)}
+        />
+      )}
+
+      {showAdvancedShapes && (
+        <AdvancedShapes
+          onShapeSelect={(shape) => {
+            const newElement: CVElement = {
+              id: `element-${Date.now()}`,
+              type: 'shape',
+              content: { shape: shape.id, svg: shape.svg },
+              position: { x: 100, y: 100 },
+              size: { width: 100, height: 100 },
+              style: getDefaultStyle('shape'),
+            };
+            setElements([...elements, newElement]);
+          }}
+          onClose={() => setShowAdvancedShapes(false)}
+        />
+      )}
+
+      {showCVScoring && (
+        <CVScoring
+          elements={elements}
+          onClose={() => setShowCVScoring(false)}
+        />
+      )}
     </div>
   );
 }
