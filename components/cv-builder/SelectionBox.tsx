@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 
 interface SelectionBoxProps {
   onSelectionChange: (selectedIds: string[]) => void;
@@ -57,7 +57,7 @@ export function SelectionBox({ onSelectionChange, elements, canvasRef }: Selecti
   }, []);
 
   // Add event listeners
-  React.useEffect(() => {
+  useEffect(() => {
     if (isSelecting) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
