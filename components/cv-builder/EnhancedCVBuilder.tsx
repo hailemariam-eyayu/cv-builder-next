@@ -717,12 +717,12 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
           {/* Canvas */}
           <div className="flex-1 p-8 bg-gray-50 overflow-auto">
             <div
-              className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg min-h-[1000px] relative"
+              className="max-w-4xl mx-auto bg-white shadow-2xl rounded-lg min-h-[1000px] relative overflow-hidden"
               style={{ width: 794, height: 1123 }} // A4 size
             >
-              {/* Left Column of CV */}
+              {/* Left Column of CV - More Prominent Visual Separation */}
               <div 
-                className="absolute left-0 top-0 w-1/3 h-full bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-300"
+                className="absolute left-0 top-0 h-full bg-gradient-to-br from-slate-100 via-gray-100 to-slate-200 border-r-4 border-slate-300 shadow-inner"
                 style={{ width: 265 }}
                 onDrop={(e) => {
                   e.preventDefault();
@@ -735,38 +735,55 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
                 }}
                 onDragOver={(e) => e.preventDefault()}
               >
-                <div className="absolute inset-0 p-4">
-                  <SortableContext items={elements.filter(e => e.position.x < 265).map((e) => e.id)} strategy={verticalListSortingStrategy}>
-                    {elements.filter(element => element.position.x < 265).map((element) => (
+                {/* Left Column Header */}
+                <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-r from-slate-200 to-slate-300 border-b border-slate-400 flex items-center justify-center">
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Personal Info</span>
+                </div>
+                
+                <div className="absolute inset-0 pt-8 p-4 space-y-4">
+                  {elements.filter(element => element.position.x < 265).map((element, index) => (
+                    <div 
+                      key={element.id}
+                      className="relative"
+                      style={{ 
+                        marginBottom: '16px',
+                        maxWidth: '225px' // Enforce column width
+                      }}
+                    >
                       <EnhancedSortableItem
-                        key={element.id}
-                        component={element}
+                        component={{
+                          ...element,
+                          size: { 
+                            ...element.size, 
+                            width: Math.min(element.size.width, 225) // Constrain to column width
+                          }
+                        }}
                         onUpdate={updateElement}
                         onDelete={deleteElement}
                         isSelected={selectedElement === element.id}
                         onSelect={() => setSelectedElement(element.id)}
-                        columnWidth={225} // Left column width minus padding
+                        columnWidth={225}
                       />
-                    ))}
-                  </SortableContext>
+                    </div>
+                  ))}
                   
                   {elements.filter(e => e.position.x < 265).length === 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                    <div className="absolute inset-0 pt-8 flex items-center justify-center text-slate-500">
                       <div className="text-center">
-                        <div className="w-12 h-12 bg-gray-300 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                          <span className="text-gray-500 text-xs font-medium">LEFT</span>
+                        <div className="w-16 h-16 bg-gradient-to-br from-slate-200 to-slate-300 rounded-xl mx-auto mb-3 flex items-center justify-center shadow-inner">
+                          <span className="text-slate-600 text-sm font-bold">📋</span>
                         </div>
-                        <p className="text-xs font-medium">Personal Info</p>
-                        <p className="text-xs text-gray-400">Contact • Skills • Photo</p>
+                        <p className="text-sm font-semibold mb-1">Personal Section</p>
+                        <p className="text-xs text-slate-400">Drop contact info, skills, or photo here</p>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Right Column of CV */}
+              {/* Right Column of CV - Clean White Background */}
               <div 
-                className="absolute right-0 top-0 h-full bg-white"
+                className="absolute right-0 top-0 h-full bg-white shadow-inner"
                 style={{ width: 529, left: 265 }}
                 onDrop={(e) => {
                   e.preventDefault();
@@ -785,29 +802,46 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
                 }}
                 onDragOver={(e) => e.preventDefault()}
               >
-                <div className="absolute inset-0 p-4">
-                  <SortableContext items={elements.filter(e => e.position.x >= 265).map((e) => e.id)} strategy={verticalListSortingStrategy}>
-                    {elements.filter(element => element.position.x >= 265).map((element) => (
+                {/* Right Column Header */}
+                <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-r from-white to-gray-50 border-b border-gray-200 flex items-center justify-center">
+                  <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">Professional Content</span>
+                </div>
+                
+                <div className="absolute inset-0 pt-8 p-4 space-y-4">
+                  {elements.filter(element => element.position.x >= 265).map((element, index) => (
+                    <div 
+                      key={element.id}
+                      className="relative"
+                      style={{ 
+                        marginBottom: '16px',
+                        maxWidth: '489px' // Enforce column width
+                      }}
+                    >
                       <EnhancedSortableItem
-                        key={element.id}
-                        component={element}
+                        component={{
+                          ...element,
+                          size: { 
+                            ...element.size, 
+                            width: Math.min(element.size.width, 489) // Constrain to column width
+                          }
+                        }}
                         onUpdate={updateElement}
                         onDelete={deleteElement}
                         isSelected={selectedElement === element.id}
                         onSelect={() => setSelectedElement(element.id)}
-                        columnWidth={489} // Right column width minus padding
+                        columnWidth={489}
                       />
-                    ))}
-                  </SortableContext>
+                    </div>
+                  ))}
                   
                   {elements.filter(e => e.position.x >= 265).length === 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                    <div className="absolute inset-0 pt-8 flex items-center justify-center text-gray-400">
                       <div className="text-center">
-                        <div className="w-12 h-12 bg-gray-300 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                          <span className="text-gray-500 text-xs font-medium">RIGHT</span>
+                        <div className="w-16 h-16 bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 rounded-xl mx-auto mb-3 flex items-center justify-center">
+                          <span className="text-gray-500 text-sm font-bold">📄</span>
                         </div>
-                        <p className="text-xs font-medium">Main Content</p>
-                        <p className="text-xs text-gray-400">Experience • Education • Summary</p>
+                        <p className="text-sm font-semibold mb-1">Main Content</p>
+                        <p className="text-xs text-gray-400">Drop experience, education, or summary here</p>
                       </div>
                     </div>
                   )}

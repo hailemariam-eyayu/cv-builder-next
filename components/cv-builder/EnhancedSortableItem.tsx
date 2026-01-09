@@ -35,11 +35,11 @@ export function EnhancedSortableItem({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : (isVisible ? 1 : 0.3),
-    left: component.position.x,
-    top: component.position.y,
-    width: component.size.width,
+    // Remove absolute positioning to work with flexbox layout
+    width: Math.min(component.size.width, columnWidth || 400),
     height: component.size.height,
     zIndex: component.style.zIndex || 1,
+    maxWidth: '100%', // Ensure it doesn't exceed container
   };
 
   const elementStyle = {
@@ -60,9 +60,9 @@ export function EnhancedSortableItem({
       ref={setNodeRef}
       style={style}
       className={`
-        group absolute cursor-pointer transition-all duration-200
-        ${isSelected ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}
-        ${isDragging ? 'z-50' : ''}
+        group relative cursor-pointer transition-all duration-200 mb-4 rounded-lg
+        ${isSelected ? 'ring-2 ring-blue-500 ring-opacity-50 shadow-lg' : 'hover:shadow-md'}
+        ${isDragging ? 'z-50 shadow-2xl' : ''}
       `}
       onClick={onSelect}
     >
@@ -166,8 +166,8 @@ function renderElement(component: CVElement, columnWidth: number = 400, onUpdate
       return (
         <div className="w-full h-full flex items-center">
           <h1 className={`
-            font-bold leading-tight tracking-tight
-            ${isLeftColumn ? 'text-gray-800' : 'text-gray-900'}
+            font-bold leading-tight tracking-tight bg-gradient-to-r from-gray-800 to-gray-900 bg-clip-text text-transparent
+            ${isLeftColumn ? 'text-slate-800' : 'text-gray-900'}
           `}>
             {component.content.text || "Heading"}
           </h1>
@@ -177,8 +177,8 @@ function renderElement(component: CVElement, columnWidth: number = 400, onUpdate
     case "text":
       return (
         <div className={`
-          w-full h-full overflow-auto leading-relaxed
-          ${isLeftColumn ? 'text-gray-700' : 'text-gray-800'}
+          w-full h-full overflow-auto leading-relaxed p-3 bg-white bg-opacity-70 rounded-lg shadow-sm
+          ${isLeftColumn ? 'text-slate-700' : 'text-gray-800'}
         `}>
           {component.content.text || "Text content"}
         </div>
@@ -186,29 +186,29 @@ function renderElement(component: CVElement, columnWidth: number = 400, onUpdate
       
     case "contact":
       return (
-        <div className="w-full h-full space-y-3">
+        <div className="w-full h-full space-y-4 p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl shadow-inner">
           {component.content.email && (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-blue-600 text-sm">📧</span>
+            <div className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                <span className="text-white text-sm">📧</span>
               </div>
-              <span className="text-sm text-gray-700 break-all">{component.content.email}</span>
+              <span className="text-sm text-gray-700 break-all font-medium">{component.content.email}</span>
             </div>
           )}
           {component.content.phone && (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-green-600 text-sm">📞</span>
+            <div className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                <span className="text-white text-sm">📞</span>
               </div>
-              <span className="text-sm text-gray-700">{component.content.phone}</span>
+              <span className="text-sm text-gray-700 font-medium">{component.content.phone}</span>
             </div>
           )}
           {component.content.location && (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-red-600 text-sm">📍</span>
+            <div className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                <span className="text-white text-sm">📍</span>
               </div>
-              <span className="text-sm text-gray-700">{component.content.location}</span>
+              <span className="text-sm text-gray-700 font-medium">{component.content.location}</span>
             </div>
           )}
         </div>
@@ -216,17 +216,16 @@ function renderElement(component: CVElement, columnWidth: number = 400, onUpdate
       
     case "experience":
       return (
-        <div className="w-full h-full space-y-3 p-4 bg-white border-l-4 border-blue-500 shadow-sm rounded-r-lg">
+        <div className="w-full h-full space-y-3 p-5 bg-gradient-to-r from-white to-blue-50 border-l-4 border-blue-500 shadow-lg rounded-r-xl hover:shadow-xl transition-all duration-300">
           <div>
-            <h3 className="font-semibold text-gray-900 text-base">{component.content.title || "Job Title"}</h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm font-medium text-blue-600">{component.content.company || "Company"}</span>
-              <span className="text-sm text-gray-500">•</span>
-              <span className="text-sm text-gray-500">{component.content.duration || "Duration"}</span>
+            <h3 className="font-bold text-gray-900 text-lg leading-tight">{component.content.title || "Job Title"}</h3>
+            <div className="flex items-center gap-3 mt-2">
+              <span className="text-sm font-semibold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">{component.content.company || "Company"}</span>
+              <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{component.content.duration || "Duration"}</span>
             </div>
           </div>
           {component.content.description && (
-            <p className="text-sm leading-relaxed text-gray-700">{component.content.description}</p>
+            <p className="text-sm leading-relaxed text-gray-700 bg-white bg-opacity-50 p-3 rounded-lg">{component.content.description}</p>
           )}
         </div>
       );
@@ -253,7 +252,7 @@ function renderElement(component: CVElement, columnWidth: number = 400, onUpdate
             {(component.content.skills || []).map((skill: string, i: number) => (
               <span 
                 key={i} 
-                className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-shadow"
+                className="px-4 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-full text-xs font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
               >
                 {skill}
               </span>
@@ -294,45 +293,186 @@ function renderElement(component: CVElement, columnWidth: number = 400, onUpdate
       
     case "image":
       return component.content.url ? (
-        <div className="w-full h-full">
+        <div className="w-full h-full relative group">
           <img 
             src={component.content.url} 
             alt={component.content.alt || "Image"} 
             className="w-full h-full object-cover rounded-lg shadow-md"
           />
+          {/* Upload overlay on hover */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = 'image/*';
+              input.onchange = async (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (file && onUpdate) {
+                  // Show loading state
+                  onUpdate(component.id, {
+                    content: { ...component.content, uploading: true }
+                  });
+                  
+                  try {
+                    // Convert to base64 for upload
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                      const base64 = e.target?.result as string;
+                      
+                      // Upload to Cloudinary
+                      const formData = new FormData();
+                      formData.append('file', base64);
+                      formData.append('upload_preset', 'ml_default'); // You may need to set this
+                      
+                      try {
+                        const response = await fetch('/api/upload', {
+                          method: 'POST',
+                          body: formData,
+                        });
+                        
+                        if (response.ok) {
+                          const data = await response.json();
+                          onUpdate(component.id, {
+                            content: { 
+                              ...component.content, 
+                              url: data.secure_url || base64, // Fallback to base64 if upload fails
+                              uploading: false 
+                            }
+                          });
+                        } else {
+                          // Fallback to base64 if upload fails
+                          onUpdate(component.id, {
+                            content: { 
+                              ...component.content, 
+                              url: base64,
+                              uploading: false 
+                            }
+                          });
+                        }
+                      } catch (error) {
+                        console.error('Upload failed:', error);
+                        // Fallback to base64
+                        onUpdate(component.id, {
+                          content: { 
+                            ...component.content, 
+                            url: base64,
+                            uploading: false 
+                          }
+                        });
+                      }
+                    };
+                    reader.readAsDataURL(file);
+                  } catch (error) {
+                    console.error('File reading failed:', error);
+                    onUpdate(component.id, {
+                      content: { ...component.content, uploading: false }
+                    });
+                  }
+                }
+              };
+              input.click();
+            }}
+          >
+            <div className="text-center text-white">
+              <div className="text-2xl mb-1">📷</div>
+              <p className="text-sm font-medium">Change Image</p>
+            </div>
+          </div>
           {component.content.caption && (
             <p className="text-xs text-center mt-2 text-gray-600">{component.content.caption}</p>
           )}
         </div>
       ) : (
         <div 
-          className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-blue-100 transition-all duration-200"
-          onClick={() => {
+          className="w-full h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-dashed border-blue-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-gradient-to-br hover:from-blue-100 hover:to-purple-100 transition-all duration-300 shadow-inner"
+          onClick={(e) => {
+            e.stopPropagation();
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = 'image/*';
-            input.onchange = (e) => {
+            input.onchange = async (e) => {
               const file = (e.target as HTMLInputElement).files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                  const result = e.target?.result as string;
-                  if (onUpdate) {
-                    onUpdate(component.id, {
-                      content: { ...component.content, url: result }
-                    });
-                  }
-                };
-                reader.readAsDataURL(file);
+              if (file && onUpdate) {
+                // Show loading state
+                onUpdate(component.id, {
+                  content: { ...component.content, uploading: true }
+                });
+                
+                try {
+                  // Convert to base64 for upload
+                  const reader = new FileReader();
+                  reader.onload = async (e) => {
+                    const base64 = e.target?.result as string;
+                    
+                    // Upload to Cloudinary
+                    const formData = new FormData();
+                    formData.append('file', base64);
+                    formData.append('upload_preset', 'ml_default'); // You may need to set this
+                    
+                    try {
+                      const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData,
+                      });
+                      
+                      if (response.ok) {
+                        const data = await response.json();
+                        onUpdate(component.id, {
+                          content: { 
+                            ...component.content, 
+                            url: data.secure_url || base64, // Fallback to base64 if upload fails
+                            uploading: false 
+                          }
+                        });
+                      } else {
+                        // Fallback to base64 if upload fails
+                        onUpdate(component.id, {
+                          content: { 
+                            ...component.content, 
+                            url: base64,
+                            uploading: false 
+                          }
+                        });
+                      }
+                    } catch (error) {
+                      console.error('Upload failed:', error);
+                      // Fallback to base64
+                      onUpdate(component.id, {
+                        content: { 
+                          ...component.content, 
+                          url: base64,
+                          uploading: false 
+                        }
+                      });
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                } catch (error) {
+                  console.error('File reading failed:', error);
+                  onUpdate(component.id, {
+                    content: { ...component.content, uploading: false }
+                  });
+                }
               }
             };
             input.click();
           }}
         >
-          <div className="text-center text-gray-500">
-            <div className="text-3xl mb-2">📷</div>
-            <p className="text-sm font-medium">Click to upload</p>
-            <p className="text-xs text-gray-400">JPG, PNG, GIF</p>
+          <div className="text-center text-blue-600">
+            {component.content.uploading ? (
+              <>
+                <div className="animate-spin text-3xl mb-2">⏳</div>
+                <p className="text-sm font-medium">Uploading...</p>
+              </>
+            ) : (
+              <>
+                <div className="text-4xl mb-3">📷</div>
+                <p className="text-sm font-bold mb-1">Click to Upload Image</p>
+                <p className="text-xs text-blue-500">JPG, PNG, GIF up to 10MB</p>
+              </>
+            )}
           </div>
         </div>
       );
