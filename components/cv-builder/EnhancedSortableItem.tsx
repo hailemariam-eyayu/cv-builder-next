@@ -13,6 +13,7 @@ interface EnhancedSortableItemProps {
   onDelete: (id: string) => void;
   isSelected?: boolean;
   onSelect?: () => void;
+  columnWidth?: number;
 }
 
 export function EnhancedSortableItem({ 
@@ -20,7 +21,8 @@ export function EnhancedSortableItem({
   onUpdate, 
   onDelete, 
   isSelected = false,
-  onSelect 
+  onSelect,
+  columnWidth = 400
 }: EnhancedSortableItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -149,48 +151,64 @@ export function EnhancedSortableItem({
         {isEditing ? (
           <EditMode component={component} onUpdate={onUpdate} onFinish={() => setIsEditing(false)} />
         ) : (
-          renderElement(component)
+          renderElement(component, columnWidth, onUpdate)
         )}
       </div>
     </div>
   );
 }
 
-function renderElement(component: CVElement) {
+function renderElement(component: CVElement, columnWidth: number = 400, onUpdate?: (id: string, updates: Partial<CVElement>) => void) {
+  const isLeftColumn = component.position.x < 265;
+  
   switch (component.type) {
     case "heading":
       return (
-        <h1 className="w-full h-full flex items-center font-bold leading-tight">
-          {component.content.text || "Heading"}
-        </h1>
+        <div className="w-full h-full flex items-center">
+          <h1 className={`
+            font-bold leading-tight tracking-tight
+            ${isLeftColumn ? 'text-gray-800' : 'text-gray-900'}
+          `}>
+            {component.content.text || "Heading"}
+          </h1>
+        </div>
       );
       
     case "text":
       return (
-        <div className="w-full h-full overflow-auto leading-relaxed">
+        <div className={`
+          w-full h-full overflow-auto leading-relaxed
+          ${isLeftColumn ? 'text-gray-700' : 'text-gray-800'}
+        `}>
           {component.content.text || "Text content"}
         </div>
       );
       
     case "contact":
       return (
-        <div className="w-full h-full space-y-1 text-sm">
+        <div className="w-full h-full space-y-3">
           {component.content.email && (
-            <div className="flex items-center gap-2">
-              <span>📧</span>
-              <span>{component.content.email}</span>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-600 text-sm">📧</span>
+              </div>
+              <span className="text-sm text-gray-700 break-all">{component.content.email}</span>
             </div>
           )}
           {component.content.phone && (
-            <div className="flex items-center gap-2">
-              <span>📞</span>
-              <span>{component.content.phone}</span>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-green-600 text-sm">📞</span>
+              </div>
+              <span className="text-sm text-gray-700">{component.content.phone}</span>
             </div>
           )}
           {component.content.location && (
-            <div className="flex items-center gap-2">
-              <span>📍</span>
-              <span>{component.content.location}</span>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-red-600 text-sm">📍</span>
+              </div>
+              <span className="text-sm text-gray-700">{component.content.location}</span>
             </div>
           )}
         </div>
@@ -198,28 +216,32 @@ function renderElement(component: CVElement) {
       
     case "experience":
       return (
-        <div className="w-full h-full space-y-2">
+        <div className="w-full h-full space-y-3 p-4 bg-white border-l-4 border-blue-500 shadow-sm rounded-r-lg">
           <div>
-            <h3 className="font-semibold text-sm">{component.content.title || "Job Title"}</h3>
-            <p className="text-xs opacity-75">
-              {component.content.company || "Company"} • {component.content.duration || "Duration"}
-            </p>
+            <h3 className="font-semibold text-gray-900 text-base">{component.content.title || "Job Title"}</h3>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-sm font-medium text-blue-600">{component.content.company || "Company"}</span>
+              <span className="text-sm text-gray-500">•</span>
+              <span className="text-sm text-gray-500">{component.content.duration || "Duration"}</span>
+            </div>
           </div>
           {component.content.description && (
-            <p className="text-xs leading-relaxed">{component.content.description}</p>
+            <p className="text-sm leading-relaxed text-gray-700">{component.content.description}</p>
           )}
         </div>
       );
       
     case "education":
       return (
-        <div className="w-full h-full space-y-1">
-          <h3 className="font-semibold text-sm">{component.content.degree || "Degree"}</h3>
-          <p className="text-xs opacity-75">
-            {component.content.institution || "Institution"} • {component.content.year || "Year"}
-          </p>
+        <div className="w-full h-full space-y-2 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg">
+          <h3 className="font-semibold text-gray-900">{component.content.degree || "Degree"}</h3>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-purple-600">{component.content.institution || "Institution"}</span>
+            <span className="text-sm text-gray-500">•</span>
+            <span className="text-sm text-gray-500">{component.content.year || "Year"}</span>
+          </div>
           {component.content.gpa && (
-            <p className="text-xs">GPA: {component.content.gpa}</p>
+            <p className="text-sm text-gray-600">GPA: <span className="font-medium">{component.content.gpa}</span></p>
           )}
         </div>
       );
@@ -227,11 +249,11 @@ function renderElement(component: CVElement) {
     case "skills":
       return (
         <div className="w-full h-full">
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-2">
             {(component.content.skills || []).map((skill: string, i: number) => (
               <span 
                 key={i} 
-                className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs"
+                className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-shadow"
               >
                 {skill}
               </span>
@@ -242,24 +264,29 @@ function renderElement(component: CVElement) {
       
     case "awards":
       return (
-        <div className="w-full h-full space-y-1">
-          <h3 className="font-semibold text-sm">{component.content.title || "Award Title"}</h3>
-          <p className="text-xs opacity-75">
-            {component.content.organization || "Organization"} • {component.content.year || "Year"}
-          </p>
+        <div className="w-full h-full space-y-2 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center gap-2">
+            <span className="text-yellow-600 text-lg">🏆</span>
+            <h3 className="font-semibold text-gray-900">{component.content.title || "Award Title"}</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-orange-600">{component.content.organization || "Organization"}</span>
+            <span className="text-sm text-gray-500">•</span>
+            <span className="text-sm text-gray-500">{component.content.year || "Year"}</span>
+          </div>
           {component.content.description && (
-            <p className="text-xs">{component.content.description}</p>
+            <p className="text-sm text-gray-700">{component.content.description}</p>
           )}
         </div>
       );
       
     case "languages":
       return (
-        <div className="w-full h-full space-y-1">
+        <div className="w-full h-full space-y-3">
           {(component.content.languages || []).map((lang: any, i: number) => (
-            <div key={i} className="flex justify-between text-sm">
-              <span>{lang.name}</span>
-              <span className="opacity-75">{lang.level}</span>
+            <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+              <span className="text-sm font-medium text-gray-800">{lang.name}</span>
+              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">{lang.level}</span>
             </div>
           ))}
         </div>
@@ -271,17 +298,41 @@ function renderElement(component: CVElement) {
           <img 
             src={component.content.url} 
             alt={component.content.alt || "Image"} 
-            className="w-full h-full object-cover rounded"
+            className="w-full h-full object-cover rounded-lg shadow-md"
           />
           {component.content.caption && (
-            <p className="text-xs text-center mt-1 opacity-75">{component.content.caption}</p>
+            <p className="text-xs text-center mt-2 text-gray-600">{component.content.caption}</p>
           )}
         </div>
       ) : (
-        <div className="w-full h-full bg-gray-100 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
+        <div 
+          className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-blue-100 transition-all duration-200"
+          onClick={() => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+              const file = (e.target as HTMLInputElement).files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  const result = e.target?.result as string;
+                  if (onUpdate) {
+                    onUpdate(component.id, {
+                      content: { ...component.content, url: result }
+                    });
+                  }
+                };
+                reader.readAsDataURL(file);
+              }
+            };
+            input.click();
+          }}
+        >
           <div className="text-center text-gray-500">
-            <div className="text-2xl mb-1">🖼️</div>
-            <p className="text-xs">Click to add image</p>
+            <div className="text-3xl mb-2">📷</div>
+            <p className="text-sm font-medium">Click to upload</p>
+            <p className="text-xs text-gray-400">JPG, PNG, GIF</p>
           </div>
         </div>
       );
@@ -289,15 +340,15 @@ function renderElement(component: CVElement) {
     case "divider":
       return (
         <div 
-          className="w-full bg-current"
-          style={{ height: component.size.height }}
+          className="w-full bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300 rounded-full"
+          style={{ height: Math.max(component.size.height, 2) }}
         />
       );
       
     case "shape":
       return (
         <div 
-          className="w-full h-full border"
+          className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 border border-gray-400 shadow-inner"
           style={{
             borderRadius: component.style.borderRadius,
             borderWidth: component.style.borderWidth,
@@ -308,7 +359,7 @@ function renderElement(component: CVElement) {
       
     default:
       return (
-        <div className="w-full h-full bg-gray-100 border border-gray-300 rounded flex items-center justify-center text-gray-500 text-xs">
+        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 border border-gray-300 rounded-lg flex items-center justify-center text-gray-500 text-xs font-medium">
           {component.type}
         </div>
       );
