@@ -456,14 +456,15 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
       column === 'left' ? e.position.x < 265 : e.position.x >= 265
     );
     
-    const xPosition = column === 'left' ? 20 : 285;
+    const xPosition = column === 'left' ? 0 : 0; // Relative to column
     const yPosition = columnElements.length * 120 + 20;
+    const actualXPosition = column === 'left' ? 20 : 285; // Absolute position
     
     const newElement: CVElement = {
       id: `element-${Date.now()}`,
       type,
       content: getDefaultContent(type),
-      position: { x: xPosition, y: yPosition },
+      position: { x: actualXPosition, y: yPosition },
       size: getDefaultSize(type, column),
       style: getDefaultStyle(type),
     };
@@ -716,30 +717,13 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
           {/* Canvas */}
           <div className="flex-1 p-8 bg-gray-50 overflow-auto">
             <div
-              className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg min-h-[1000px] relative flex"
+              className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg min-h-[1000px] relative"
               style={{ width: 794, height: 1123 }} // A4 size
-              onDrop={(e) => {
-                e.preventDefault();
-                const data = e.dataTransfer.getData('text/plain');
-                
-                if (data.startsWith('template-')) {
-                  const templateId = data.replace('template-', '');
-                  const template = templates.find(t => t.id === templateId);
-                  if (template) {
-                    setElements(template.elements);
-                  }
-                } else if (data.startsWith('element-')) {
-                  const elementType = data.replace('element-', '') as CVElement['type'];
-                  addElement(elementType);
-                }
-              }}
-              onDragOver={(e) => e.preventDefault()}
             >
               {/* Left Column of CV */}
               <div 
-                className="w-1/3 bg-gray-100 relative border-r border-gray-200"
-                style={{ minHeight: '100%' }}
-                data-column="left"
+                className="absolute left-0 top-0 w-1/3 h-full bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-300"
+                style={{ width: 265 }}
                 onDrop={(e) => {
                   e.preventDefault();
                   const data = e.dataTransfer.getData('text/plain');
@@ -761,6 +745,7 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
                         onDelete={deleteElement}
                         isSelected={selectedElement === element.id}
                         onSelect={() => setSelectedElement(element.id)}
+                        columnWidth={225} // Left column width minus padding
                       />
                     ))}
                   </SortableContext>
@@ -769,9 +754,10 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
                     <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                       <div className="text-center">
                         <div className="w-12 h-12 bg-gray-300 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                          <span className="text-gray-500 text-xs">Left</span>
+                          <span className="text-gray-500 text-xs font-medium">LEFT</span>
                         </div>
-                        <p className="text-xs">Drop elements here</p>
+                        <p className="text-xs font-medium">Personal Info</p>
+                        <p className="text-xs text-gray-400">Contact • Skills • Photo</p>
                       </div>
                     </div>
                   )}
@@ -780,9 +766,8 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
 
               {/* Right Column of CV */}
               <div 
-                className="flex-1 bg-white relative"
-                style={{ minHeight: '100%' }}
-                data-column="right"
+                className="absolute right-0 top-0 h-full bg-white"
+                style={{ width: 529, left: 265 }}
                 onDrop={(e) => {
                   e.preventDefault();
                   const data = e.dataTransfer.getData('text/plain');
@@ -810,6 +795,7 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
                         onDelete={deleteElement}
                         isSelected={selectedElement === element.id}
                         onSelect={() => setSelectedElement(element.id)}
+                        columnWidth={489} // Right column width minus padding
                       />
                     ))}
                   </SortableContext>
@@ -818,29 +804,37 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
                     <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                       <div className="text-center">
                         <div className="w-12 h-12 bg-gray-300 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                          <span className="text-gray-500 text-xs">Right</span>
+                          <span className="text-gray-500 text-xs font-medium">RIGHT</span>
                         </div>
-                        <p className="text-xs">Drop elements here</p>
+                        <p className="text-xs font-medium">Main Content</p>
+                        <p className="text-xs text-gray-400">Experience • Education • Summary</p>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
+              {/* Column Labels (only when empty) */}
               {elements.length === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center text-gray-400 pointer-events-none">
                   <div className="text-center">
-                    <Layout className="w-16 h-16 mx-auto mb-4" />
-                    <p className="text-lg mb-2">Start Building Your CV</p>
-                    <p className="text-sm">Drag templates from the left or elements from the right</p>
-                    <div className="flex items-center justify-center gap-4 mt-4">
+                    <Layout className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-lg mb-2 font-semibold text-gray-500">Professional CV Builder</p>
+                    <p className="text-sm mb-4">Drag templates or elements to get started</p>
+                    <div className="flex items-center justify-center gap-8">
                       <div className="text-center">
-                        <div className="w-8 h-8 bg-gray-200 rounded mx-auto mb-1"></div>
-                        <p className="text-xs">Left Column</p>
+                        <div className="w-16 h-16 bg-gradient-to-b from-gray-200 to-gray-300 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                          <span className="text-gray-600 text-xs font-bold">LEFT</span>
+                        </div>
+                        <p className="text-xs font-medium">Personal Info</p>
+                        <p className="text-xs text-gray-400">Photo • Contact • Skills</p>
                       </div>
                       <div className="text-center">
-                        <div className="w-8 h-8 bg-gray-200 rounded mx-auto mb-1"></div>
-                        <p className="text-xs">Right Column</p>
+                        <div className="w-16 h-16 bg-white border-2 border-gray-300 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                          <span className="text-gray-600 text-xs font-bold">RIGHT</span>
+                        </div>
+                        <p className="text-xs font-medium">Main Content</p>
+                        <p className="text-xs text-gray-400">Experience • Education</p>
                       </div>
                     </div>
                   </div>
