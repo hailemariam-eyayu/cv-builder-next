@@ -73,21 +73,80 @@ const templates: Template[] = [
     description: "Clean and contemporary design",
     thumbnail: "🎨",
     elements: [
+      // Left Column Elements
       {
-        id: "header",
-        type: "heading",
-        content: { text: "Your Name" },
-        position: { x: 50, y: 50 },
-        size: { width: 400, height: 60 },
-        style: { fontSize: 36, fontWeight: "bold", color: "#1f2937" },
+        id: "profile-image",
+        type: "image",
+        content: { url: "", alt: "Profile picture" },
+        position: { x: 50, y: 30 },
+        size: { width: 120, height: 120 },
+        style: { borderRadius: 60 },
       },
       {
         id: "contact",
         type: "contact",
-        content: { email: "your.email@example.com", phone: "+1 (555) 123-4567", location: "City, State" },
-        position: { x: 50, y: 120 },
-        size: { width: 300, height: 80 },
-        style: { fontSize: 14, color: "#6b7280" },
+        content: { 
+          email: "jane.smith@email.com", 
+          phone: "+1 234 567 8900", 
+          location: "San Francisco, CA" 
+        },
+        position: { x: 20, y: 170 },
+        size: { width: 200, height: 100 },
+        style: { fontSize: 12, color: "#6b7280" },
+      },
+      {
+        id: "skills",
+        type: "skills",
+        content: { skills: ["Figma", "Sketch", "Adobe XD", "Prototyping", "User Research", "Design Systems"] },
+        position: { x: 20, y: 290 },
+        size: { width: 200, height: 150 },
+        style: { fontSize: 11 },
+      },
+      // Right Column Elements
+      {
+        id: "name",
+        type: "heading",
+        content: { text: "JANE SMITH" },
+        position: { x: 285, y: 30 },
+        size: { width: 450, height: 50 },
+        style: { fontSize: 32, fontWeight: "bold", color: "#1f2937" },
+      },
+      {
+        id: "title",
+        type: "text",
+        content: { text: "Product Designer" },
+        position: { x: 285, y: 85 },
+        size: { width: 450, height: 30 },
+        style: { fontSize: 18, color: "#3b82f6", fontWeight: "600" },
+      },
+      {
+        id: "summary",
+        type: "text",
+        content: { text: "Creative product designer with 6+ years of experience crafting intuitive digital experiences for web and mobile applications." },
+        position: { x: 285, y: 130 },
+        size: { width: 450, height: 60 },
+        style: { fontSize: 14, color: "#374151" },
+      },
+      {
+        id: "experience-title",
+        type: "heading",
+        content: { text: "EXPERIENCE" },
+        position: { x: 285, y: 210 },
+        size: { width: 450, height: 30 },
+        style: { fontSize: 16, fontWeight: "bold", color: "#1f2937" },
+      },
+      {
+        id: "experience-1",
+        type: "experience",
+        content: {
+          title: "Senior Product Designer",
+          company: "Design Studio",
+          duration: "2021 - Present",
+          description: "Leading design initiatives for enterprise SaaS products. Conducting user research and creating design systems."
+        },
+        position: { x: 285, y: 250 },
+        size: { width: 450, height: 100 },
+        style: { fontSize: 13, color: "#374151" },
       },
     ],
   },
@@ -97,21 +156,60 @@ const templates: Template[] = [
     description: "Colorful and artistic layout",
     thumbnail: "🎭",
     elements: [
+      // Header background spanning both columns
       {
         id: "header-bg",
         type: "shape",
         content: { shape: "rectangle" },
         position: { x: 0, y: 0 },
-        size: { width: 794, height: 150 },
+        size: { width: 794, height: 120 },
         style: { backgroundColor: "#3b82f6", borderRadius: 0 },
       },
+      // Left Column
+      {
+        id: "profile-image",
+        type: "image",
+        content: { url: "", alt: "Profile picture" },
+        position: { x: 30, y: 140 },
+        size: { width: 100, height: 100 },
+        style: { borderRadius: 50, backgroundColor: "#ffffff" },
+      },
+      {
+        id: "contact-info",
+        type: "contact",
+        content: { 
+          email: "creative@email.com", 
+          phone: "+1 555 0123", 
+          location: "New York, NY" 
+        },
+        position: { x: 20, y: 260 },
+        size: { width: 200, height: 80 },
+        style: { fontSize: 11, color: "#374151" },
+      },
+      // Right Column
       {
         id: "name",
         type: "heading",
         content: { text: "Creative Professional" },
-        position: { x: 50, y: 40 },
-        size: { width: 500, height: 70 },
-        style: { fontSize: 42, fontWeight: "bold", color: "#ffffff" },
+        position: { x: 285, y: 30 },
+        size: { width: 450, height: 60 },
+        style: { fontSize: 36, fontWeight: "bold", color: "#ffffff" },
+      },
+      {
+        id: "tagline",
+        type: "text",
+        content: { text: "Bringing ideas to life through design" },
+        position: { x: 285, y: 85 },
+        size: { width: 450, height: 25 },
+        style: { fontSize: 16, color: "#e5e7eb" },
+      },
+      {
+        id: "about",
+        type: "text",
+        content: { text: "Passionate designer with expertise in visual communication and brand identity." },
+        position: { x: 285, y: 140 },
+        size: { width: 450, height: 60 },
+        style: { fontSize: 14, color: "#374151" },
       },
     ],
   },
@@ -121,13 +219,57 @@ const templates: Template[] = [
     description: "Simple and elegant design",
     thumbnail: "⚪",
     elements: [
+      // Centered header spanning both columns
       {
         id: "name",
         type: "heading",
         content: { text: "John Doe" },
-        position: { x: 100, y: 100 },
-        size: { width: 300, height: 50 },
+        position: { x: 200, y: 80 },
+        size: { width: 394, height: 50 },
         style: { fontSize: 32, color: "#000000", textAlign: "center" },
+      },
+      {
+        id: "divider",
+        type: "divider",
+        content: {},
+        position: { x: 297, y: 140 },
+        size: { width: 200, height: 1 },
+        style: { backgroundColor: "#000000" },
+      },
+      {
+        id: "title",
+        type: "text",
+        content: { text: "Professional Title" },
+        position: { x: 200, y: 160 },
+        size: { width: 394, height: 30 },
+        style: { fontSize: 16, color: "#666666", textAlign: "center" },
+      },
+      // Left Column
+      {
+        id: "contact",
+        type: "contact",
+        content: { 
+          email: "john.doe@email.com", 
+          phone: "+1 555 0123", 
+          location: "City, State" 
+        },
+        position: { x: 20, y: 220 },
+        size: { width: 200, height: 80 },
+        style: { fontSize: 12, color: "#666666" },
+      },
+      // Right Column
+      {
+        id: "experience",
+        type: "experience",
+        content: {
+          title: "Current Position",
+          company: "Company Name",
+          duration: "2020 - Present",
+          description: "Brief description of responsibilities and achievements."
+        },
+        position: { x: 285, y: 220 },
+        size: { width: 450, height: 100 },
+        style: { fontSize: 13, color: "#333333" },
       },
     ],
   },
@@ -137,21 +279,89 @@ const templates: Template[] = [
     description: "Sophisticated layout for executives",
     thumbnail: "💼",
     elements: [
+      // Left sidebar background
       {
-        id: "sidebar",
+        id: "sidebar-bg",
         type: "shape",
         content: { shape: "rectangle" },
         position: { x: 0, y: 0 },
-        size: { width: 250, height: 1123 },
-        style: { backgroundColor: "#1f2937" },
+        size: { width: 265, height: 1123 },
+        style: { backgroundColor: "#1f2937", borderRadius: 0 },
       },
+      // Left Column (on dark background)
       {
         id: "name",
         type: "heading",
         content: { text: "Executive Name" },
         position: { x: 30, y: 50 },
-        size: { width: 190, height: 60 },
-        style: { fontSize: 28, fontWeight: "bold", color: "#ffffff" },
+        size: { width: 200, height: 60 },
+        style: { fontSize: 24, fontWeight: "bold", color: "#ffffff" },
+      },
+      {
+        id: "title",
+        type: "text",
+        content: { text: "Chief Executive Officer" },
+        position: { x: 30, y: 115 },
+        size: { width: 200, height: 30 },
+        style: { fontSize: 14, color: "#d1d5db" },
+      },
+      {
+        id: "contact-sidebar",
+        type: "contact",
+        content: {
+          email: "executive@company.com",
+          phone: "+1 555 987 6543",
+          location: "New York, NY"
+        },
+        position: { x: 30, y: 160 },
+        size: { width: 200, height: 100 },
+        style: { fontSize: 11, color: "#d1d5db" },
+      },
+      {
+        id: "skills-sidebar",
+        type: "skills",
+        content: { skills: ["Leadership", "Strategy", "Operations", "Finance", "M&A"] },
+        position: { x: 30, y: 280 },
+        size: { width: 200, height: 120 },
+        style: { fontSize: 10, color: "#d1d5db" },
+      },
+      // Right Column (main content)
+      {
+        id: "summary-title",
+        type: "heading",
+        content: { text: "EXECUTIVE SUMMARY" },
+        position: { x: 285, y: 50 },
+        size: { width: 450, height: 30 },
+        style: { fontSize: 16, fontWeight: "bold", color: "#1f2937" },
+      },
+      {
+        id: "summary",
+        type: "text",
+        content: { text: "Experienced executive with proven track record of leading organizations through growth and transformation. Expertise in strategic planning, operational excellence, and team leadership." },
+        position: { x: 285, y: 90 },
+        size: { width: 450, height: 80 },
+        style: { fontSize: 14, color: "#374151" },
+      },
+      {
+        id: "experience-title",
+        type: "heading",
+        content: { text: "PROFESSIONAL EXPERIENCE" },
+        position: { x: 285, y: 190 },
+        size: { width: 450, height: 30 },
+        style: { fontSize: 16, fontWeight: "bold", color: "#1f2937" },
+      },
+      {
+        id: "experience-1",
+        type: "experience",
+        content: {
+          title: "Chief Executive Officer",
+          company: "Fortune 500 Company",
+          duration: "2018 - Present",
+          description: "Leading strategic initiatives and driving organizational growth across multiple business units."
+        },
+        position: { x: 285, y: 230 },
+        size: { width: 450, height: 100 },
+        style: { fontSize: 13, color: "#374151" },
       },
     ],
   },
@@ -234,8 +444,27 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
       id: `element-${Date.now()}`,
       type,
       content: getDefaultContent(type),
-      position: { x: 50, y: elements.length * 120 + 50 },
+      position: { x: 300, y: elements.length * 120 + 50 }, // Default to right column
       size: getDefaultSize(type),
+      style: getDefaultStyle(type),
+    };
+    setElements([...elements, newElement]);
+  };
+
+  const addElementToColumn = (type: CVElement['type'], column: 'left' | 'right') => {
+    const columnElements = elements.filter(e => 
+      column === 'left' ? e.position.x < 265 : e.position.x >= 265
+    );
+    
+    const xPosition = column === 'left' ? 20 : 285;
+    const yPosition = columnElements.length * 120 + 20;
+    
+    const newElement: CVElement = {
+      id: `element-${Date.now()}`,
+      type,
+      content: getDefaultContent(type),
+      position: { x: xPosition, y: yPosition },
+      size: getDefaultSize(type, column),
       style: getDefaultStyle(type),
     };
     setElements([...elements, newElement]);
@@ -487,7 +716,7 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
           {/* Canvas */}
           <div className="flex-1 p-8 bg-gray-50 overflow-auto">
             <div
-              className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg min-h-[1000px] relative"
+              className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg min-h-[1000px] relative flex"
               style={{ width: 794, height: 1123 }} // A4 size
               onDrop={(e) => {
                 e.preventDefault();
@@ -506,25 +735,114 @@ export function EnhancedCVBuilder({ initialElements = [], onSave }: EnhancedCVBu
               }}
               onDragOver={(e) => e.preventDefault()}
             >
-              <SortableContext items={elements.map((e) => e.id)} strategy={verticalListSortingStrategy}>
-                {elements.map((element) => (
-                  <EnhancedSortableItem
-                    key={element.id}
-                    component={element}
-                    onUpdate={updateElement}
-                    onDelete={deleteElement}
-                    isSelected={selectedElement === element.id}
-                    onSelect={() => setSelectedElement(element.id)}
-                  />
-                ))}
-              </SortableContext>
+              {/* Left Column of CV */}
+              <div 
+                className="w-1/3 bg-gray-100 relative border-r border-gray-200"
+                style={{ minHeight: '100%' }}
+                data-column="left"
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const data = e.dataTransfer.getData('text/plain');
+                  
+                  if (data.startsWith('element-')) {
+                    const elementType = data.replace('element-', '') as CVElement['type'];
+                    addElementToColumn(elementType, 'left');
+                  }
+                }}
+                onDragOver={(e) => e.preventDefault()}
+              >
+                <div className="absolute inset-0 p-4">
+                  <SortableContext items={elements.filter(e => e.position.x < 265).map((e) => e.id)} strategy={verticalListSortingStrategy}>
+                    {elements.filter(element => element.position.x < 265).map((element) => (
+                      <EnhancedSortableItem
+                        key={element.id}
+                        component={element}
+                        onUpdate={updateElement}
+                        onDelete={deleteElement}
+                        isSelected={selectedElement === element.id}
+                        onSelect={() => setSelectedElement(element.id)}
+                      />
+                    ))}
+                  </SortableContext>
+                  
+                  {elements.filter(e => e.position.x < 265).length === 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                      <div className="text-center">
+                        <div className="w-12 h-12 bg-gray-300 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                          <span className="text-gray-500 text-xs">Left</span>
+                        </div>
+                        <p className="text-xs">Drop elements here</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column of CV */}
+              <div 
+                className="flex-1 bg-white relative"
+                style={{ minHeight: '100%' }}
+                data-column="right"
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const data = e.dataTransfer.getData('text/plain');
+                  
+                  if (data.startsWith('template-')) {
+                    const templateId = data.replace('template-', '');
+                    const template = templates.find(t => t.id === templateId);
+                    if (template) {
+                      setElements(template.elements);
+                    }
+                  } else if (data.startsWith('element-')) {
+                    const elementType = data.replace('element-', '') as CVElement['type'];
+                    addElementToColumn(elementType, 'right');
+                  }
+                }}
+                onDragOver={(e) => e.preventDefault()}
+              >
+                <div className="absolute inset-0 p-4">
+                  <SortableContext items={elements.filter(e => e.position.x >= 265).map((e) => e.id)} strategy={verticalListSortingStrategy}>
+                    {elements.filter(element => element.position.x >= 265).map((element) => (
+                      <EnhancedSortableItem
+                        key={element.id}
+                        component={element}
+                        onUpdate={updateElement}
+                        onDelete={deleteElement}
+                        isSelected={selectedElement === element.id}
+                        onSelect={() => setSelectedElement(element.id)}
+                      />
+                    ))}
+                  </SortableContext>
+                  
+                  {elements.filter(e => e.position.x >= 265).length === 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                      <div className="text-center">
+                        <div className="w-12 h-12 bg-gray-300 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                          <span className="text-gray-500 text-xs">Right</span>
+                        </div>
+                        <p className="text-xs">Drop elements here</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {elements.length === 0 && (
-                <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                <div className="absolute inset-0 flex items-center justify-center text-gray-400 pointer-events-none">
                   <div className="text-center">
                     <Layout className="w-16 h-16 mx-auto mb-4" />
                     <p className="text-lg mb-2">Start Building Your CV</p>
                     <p className="text-sm">Drag templates from the left or elements from the right</p>
+                    <div className="flex items-center justify-center gap-4 mt-4">
+                      <div className="text-center">
+                        <div className="w-8 h-8 bg-gray-200 rounded mx-auto mb-1"></div>
+                        <p className="text-xs">Left Column</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="w-8 h-8 bg-gray-200 rounded mx-auto mb-1"></div>
+                        <p className="text-xs">Right Column</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -578,30 +896,36 @@ function getDefaultContent(type: CVElement['type']) {
   }
 }
 
-function getDefaultSize(type: CVElement['type']) {
+function getDefaultSize(type: CVElement['type'], column?: 'left' | 'right') {
+  const leftColumnWidth = 220; // Narrower for left column
+  const rightColumnWidth = 450; // Wider for right column
+  
+  const width = column === 'left' ? leftColumnWidth : 
+                column === 'right' ? rightColumnWidth : 400;
+  
   switch (type) {
     case "heading":
-      return { width: 400, height: 50 };
+      return { width, height: 50 };
     case "text":
-      return { width: 400, height: 100 };
+      return { width, height: 100 };
     case "contact":
-      return { width: 300, height: 80 };
+      return { width: column === 'left' ? 200 : 300, height: 80 };
     case "experience":
-      return { width: 450, height: 120 };
+      return { width, height: 120 };
     case "education":
-      return { width: 400, height: 80 };
+      return { width, height: 80 };
     case "skills":
-      return { width: 350, height: 100 };
+      return { width: column === 'left' ? 200 : 350, height: 100 };
     case "awards":
-      return { width: 400, height: 80 };
+      return { width, height: 80 };
     case "languages":
-      return { width: 300, height: 80 };
+      return { width: column === 'left' ? 200 : 300, height: 80 };
     case "image":
-      return { width: 150, height: 150 };
+      return { width: column === 'left' ? 120 : 150, height: column === 'left' ? 120 : 150 };
     case "divider":
-      return { width: 400, height: 2 };
+      return { width, height: 2 };
     case "shape":
-      return { width: 200, height: 100 };
+      return { width: column === 'left' ? 200 : 300, height: 100 };
     default:
       return { width: 200, height: 50 };
   }
